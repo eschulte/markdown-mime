@@ -15,4 +15,4 @@ deps:
 
 # Run tests.
 test: clean deps
-	$(EMACS) -batch -Q -l org-mime.el -l test/htmlize.el -l test/org-mime-tests.el
+	$(EMACS) -batch -Q -l markdown-mime.el -l test/htmlize.el -l test/markdown-mime-tests.el
