@@ -1,11 +1,6 @@
 markdown-mime
 =============
 
-[[https://travis-ci.org/markdown-mime/markdown-mime][https://travis-ci.org/markdown-mime/markdown-mime.svg?branch=master]]
-[[https://elpa.nongnu.org/nongnu/markdown-mime.html][file:https://elpa.nongnu.org/nongnu/markdown-mime.svg]]
-[[http://melpa.org/#/markdown-mime][file:http://melpa.org/packages/markdown-mime-badge.svg]]
-[[http://stable.melpa.org/#/markdown-mime][file:http://stable.melpa.org/packages/markdown-mime-badge.svg]]
-
 This program sends HTML email using Markdown HTML export.
 
 This approximates a WYSiWYG HTML mail editor from within Emacs, and
