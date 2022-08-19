@@ -51,13 +51,27 @@
 ;;             (lambda ()
 ;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
 ;;
-;; Extra Tips (TODO):
-;; 1. In order to embed images into your mail, use the syntax below,
+;; You may want to enable markdown in the messsage body of your email.
+;; You can do this with mmm-mode by adding the following to your
+;; config.
 ;;
-;;    [[/full/path/to/your.jpg]]
+;;     (mmm-add-classes
+;;      '((message-minor-markdown
+;;         :submode markdown-mode
+;;         :face mmm-declaration-submode-face
+;;         :front "--text follows this line--"
+;;         :front-offset 1 ; Skip the following newline.
+;;         ;; :front-offset 36 ; Skip "<#secure method=pgpmime mode=sign>" and 2 newlines.
+;;         :back "-- ")))
+;;     (mmm-add-mode-ext-class 'message-mode nil 'message-minor-markdown)
+;;
+;; Extra Tips:
+;; 1. You can embed images into your mail using normal markdown syntax.
+;;
+;;    ![](/full/path/to/your.jpg
 ;;
 ;; 2. It's easy to define your hack the exported plain text and html.
-;; For example, below code removes "\\" from plain text,
+;;    For example, below code removes "\\" from plain text,
 ;;
 ;;   (add-hook 'markdown-mime-plain-text-hook
 ;;             (lambda ()
