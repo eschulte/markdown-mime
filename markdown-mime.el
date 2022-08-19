@@ -2,11 +2,11 @@
 
 ;; Copyright (C) 2010-2015 Eric Schulte, 2016-2021 Chen Bin
 
-;; Author: Eric Schulte
-;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
-;; Keywords: mime, mail, email, html
-;; Homepage: http://github.com/markdown-mime/markdown-mime
-;; Version: 0.3.1
+;; Authors: Eric Schulte, Chen Bin <chenbin.sh@gmail.com>
+;; Maintainer: Eric Schulte <schulte.eric@gmail.com>
+;; Keywords: mime, mail, email, html, markdown
+;; Homepage: http://github.com/eschulte/markdown-mime
+;; Version: 0.3.2
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is not part of GNU Emacs.
@@ -28,51 +28,19 @@
 
 ;;; Commentary:
 
-;; WYSIWYG, html mime composition using org-mode
+;; WYSIWYG, html mime composition using markdown-mode
 ;;
-;; For mail composed using the orgstruct-mode minor mode, this
-;; provides a function for converting all or part of your mail buffer
-;; to embedded html as exported by org-mode.  Call `markdown-mime-htmlize'
-;; in a message buffer to convert either the active region or the
-;; entire buffer to html.
-;;
-;; Similarly the `markdown-mime-org-buffer-htmlize' function can be called
-;; from within an org-mode buffer to convert the buffer to html, and
-;; package the results into an email handling with appropriate MIME
-;; encoding.
-;;
-;; `markdown-mime-org-subtree-htmlize' is similar to `markdown-mime-org-buffer-htmlize'
-;; but works on current subtree.  It can read following subtree properties:
-;; MAIL_SUBJECT, MAIL_TO, MAIL_FROM, MAIL_CC, and MAIL_BCC.
-;;
-;; Here is the sample of a subtree:
-;; * mail one
-;;   :PROPERTIES:
-;;   :MAIL_SUBJECT: mail title
-;;   :MAIL_TO: person1@gmail.com
-;;   :MAIL_FROM: sender@gmail.com
-;;   :MAIL_CC: person2@gmail.com
-;;   :MAIL_BCC: person3@gmail.com
-;;   :END:
-;;
-;; To avoid exporting the table of contents, you can setup
-;; `markdown-mime-export-options' as below,
-;;   (setq markdown-mime-export-options '(:with-latex dvipng
-;;                                   :section-numbers nil
-;;                                   :with-author nil
-;;                                   :with-toc nil))
-;; It overrides Org default settings, but still inferior to file-local settings.
-;;
-;; Or just setup your export options in the org buffer/subtree.  These are
-;; overridden by `markdown-mime-export-options' when it is non-nil.
-;;
+;; For mail composed using markdown syntax, this provides a function
+;; for converting all or part of your mail buffer to embedded html as
+;; exported by markdown.  Call `markdown-mime-htmlize' in a message
+;; buffer to convert either the active region or the entire buffer to
+;; html.
 ;;
 ;; Quick start:
 ;; Write a message in message-mode, make sure the mail body follows
-;; org format.  Run `markdown-mime-edit-mail-in-org-mode' to edit mail
-;; in a special edit with `org-mode'.
-;; Run `markdown-mime-htmlize' to convert the plain text mail to html mail.
-;; Run `markdown-mime-revert-to-plain-text-mail' if you want to restore to
+;; markdown format.  Run `markdown-mime-htmlize' to convert the plain
+;; text mail to html mail.  Run
+;; `markdown-mime-revert-to-plain-text-mail' if you want to restore to
 ;; plain text mail.
 ;;
 ;; Setup (OPTIONAL):
@@ -83,13 +51,7 @@
 ;;             (lambda ()
 ;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
 ;;
-;; and the following org-mode binding
-;;
-;;   (add-hook 'org-mode-hook
-;;             (lambda ()
-;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-org-buffer-htmlize)))
-;;
-;; Extra Tips:
+;; Extra Tips (TODO):
 ;; 1. In order to embed images into your mail, use the syntax below,
 ;;
 ;;    [[/full/path/to/your.jpg]]
@@ -112,74 +74,23 @@
 ;; 3. The quoted mail uses Gmail's style, so reply looks clean and modern.
 ;;
 ;; 4. Please note this program can only embed exported HTML into mail.
-;;    Org-mode is responsible for rendering HTML.
-;;
-;;    For example, see https://github.com/markdown-mime/markdown-mime/issues/38
-;;    The solution is patching org-mode,
-;;    https://lists.gnu.org/archive/html/emacs-orgmode/2019-11/msg00016.html
-;;
-;; 5. See https://github.com/markdown-mime/markdown-mime for more tips
+;;    Markdown is responsible for rendering HTML.
 ;;
 
 ;;; Code:
 (require 'cl-lib)
-(require 'outline)
-(require 'org)
-(require 'ox-org)
 (require 'message)
-
-(defcustom markdown-mime-beautify-quoted-mail-p t
-  "Beautify quoted mail in more clean HTML, like Gmail."
-  :group 'markdown-mime
-  :type 'boolean)
-
-(defcustom markdown-mime-use-property-inheritance nil
-  "Non-nil means al MAIL_ properties apply also for sub-levels."
-  :group 'markdown-mime
-  :type 'boolean)
 
 (defcustom markdown-mime-library 'mml
   "Library to use for marking up MIME elements."
   :group 'markdown-mime
   :type '(choice 'mml 'semi 'vm))
 
-(defcustom markdown-mime-export-ascii nil
-  "ASCII export options for text/plain.
-Default (nil) selects the original org file."
-  :group 'markdown-mime
-  :type '(choice 'ascii 'latin1 'utf-8))
-
-(defcustom markdown-mime-preserve-breaks t
-  "Temporary value of `org-export-preserve-breaks' during mime encoding."
-  :group 'markdown-mime
-  :type 'boolean)
-
-(defcustom markdown-mime-fixed-width-wrap
-  "<pre style=\"font-family: courier, monospace;\">\n%s</pre>\n"
-  "Format string used to wrap a fixed width HTML email."
-  :group 'markdown-mime
-  :type 'string)
-
-(defcustom markdown-mime-find-html-start 'identity
-  "Call back to search the new HTML start for htmlize in message buffer."
-  :group 'markdown-mime
-  :type 'sexp)
-
-(defcustom markdown-mime-org-html-with-latex-default 'dvipng
-  "Default value of `org-html-with-latex'."
-  :group 'markdown-mime
-  :type 'sexp)
-
 (defcustom markdown-mime-mail-signature-separator
   (or message-signature-separator "^--\s?$")
   "Default mail signature separator."
   :group 'markdown-mime
   :type 'string)
-
-(defvar markdown-mime-export-options '(:with-latex dvipng)
-  "Default export options which may override org buffer/subtree options.
-You could avoid exporting section-number/author/toc.
-It overrides Org default settings, but still inferior to file-local settings.")
 
 (defvar markdown-mime-plain-text-hook nil
   "Hook to run over the plain text buffer before adding it to email.
@@ -195,7 +106,7 @@ Functions should take no arguments and will be run in a
 buffer holding the text to be exported.")
 
 (defvar markdown-mime-send-buffer-hook nil
-  "Hook to run in the Org-mode file before export.")
+  "Hook to run in the markdown file before export.")
 
 (defvar markdown-mime-debug nil
   "Enable debug logger.")
@@ -207,68 +118,21 @@ buffer holding the text to be exported.")
 (defvar markdown-mime--saved-temp-window-config nil)
 (defconst markdown-mime-src--hint "## markdown-mime hint: Press C-c C-c to commit change.\n")
 
-(defun markdown-mime-get-buffer-export-options ()
-  "Get export options in buffer."
-  (or markdown-mime-export-options
-      (and (fboundp 'org-export--get-inbuffer-options)
-           (org-export--get-inbuffer-options))))
-
-(defun markdown-mime-get-export-options (subtreep)
-  "SUBTREEP is t if current node is subtree."
-  (cond
-   (subtreep
-    (or markdown-mime-export-options
-        (and (fboundp 'org-export--get-subtree-options)
-             (org-export--get-subtree-options))))
-   (t
-    (markdown-mime-get-buffer-export-options))))
-
 (defun markdown-mime-current-line ()
   "Get current line."
   (buffer-substring-no-properties (line-beginning-position)
                                   (line-end-position)))
 
-(defun markdown-mime-use-ascii-charset ()
-  "Return nil unless `markdown-mime-export-ascii' is set to a valid value."
-  (car (memq markdown-mime-export-ascii '(ascii utf-8 latin1))))
-
-(defun markdown-mime-export-ascii-maybe (text &optional opts)
-  "Export TEXT to ascii format with OPTS."
-  (let* ((ascii-charset (markdown-mime-use-ascii-charset))
-         (plain-text (cond
-                      (ascii-charset
-                       (setq org-ascii-charset ascii-charset)
-                       (org-export-string-as text 'ascii nil opts))
-                      (t
-                       text))))
-    plain-text))
-
-(defun markdown-mime-export-buffer-or-subtree (subtreep)
-  "Similar to `org-html-export-as-html' and `org-org-export-as-org'.
-SUBTREEP is t if current node is subtree."
-  (let* ((opts (markdown-mime-get-export-options subtreep))
-         (plain (markdown-mime-export-ascii-maybe (buffer-string) opts))
-         (buf (org-export-to-buffer 'html "*Org Mime Export*" nil subtreep nil t opts))
-         (body (prog1
-                   (with-current-buffer buf
-                     (buffer-string))
-                 (kill-buffer buf))))
-    (cons body plain)))
-
 (defun markdown-mime-export-string (string &optional options)
   "Export STRING into html with OPTIONS."
-  ;; Emacs 25+ prefer exporting drawer by default
-  ;; obviously not acceptable in exporting to mail body
-  (let* ((org-export-with-drawers nil))
-
-    (when markdown-mime-export-options
-      (setq options markdown-mime-export-options))
-
-    ;; we won't export title from org file anyway
-    (if options (setq options (plist-put options 'title nil)))
-
-    ;; emacs24.4+
-    (org-export-string-as string 'html t options)))
+  (with-temp-buffer
+    (let ((output-buffer (buffer-name (current-buffer))))
+      (unwind-protect
+          (progn
+            (with-temp-buffer
+              (insert string)
+              (markdown-standalone output-buffer))))
+      (buffer-string))))
 
 ;; example hook, for setting a dark background in
 ;; <pre style="background-color: #EEE;"> elements
@@ -298,47 +162,6 @@ SUBTREEP is t if current node is subtree."
               (buffer-string)))))
     (vm "?")))
 
-(defun markdown-mime-beautify-quoted (html)
-  "Beautify quoted mail in modern UI style.
-HTML is the body of the message."
-  (when markdown-mime-debug
-    (message "markdown-mime-beautify-quoted called => %s" html))
-  (let ((quote-depth 0)
-        (line-depth 0)
-        (in-quote-p nil)
-        (quote-opening "<blockquote class=\"gmail_quote\" style=\"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex\">\n\n<div>")
-        (quote-closing "\n</div></blockquote>\n"))
-    (with-temp-buffer
-      ;; clean title of quoted
-      (insert (replace-regexp-in-string
-               "<p>[\n\r]*&gt;&gt;&gt;&gt;&gt; .* == \\([^\r\n]*\\)[\r\n]*</p>"
-               "<div class=\"gmail_quote\">\\1</div>"
-               html))
-      (goto-char (point-min))
-      (while (not (eobp))
-        (setq line-depth 0)
-        (setq in-quote-p nil)
-        (while (looking-at "&gt;[ \t]*")
-          (setq in-quote-p t)
-          (replace-match "")
-          (cl-incf line-depth))
-        (cond
-         ((< quote-depth line-depth)
-          (while (< quote-depth line-depth)
-            (insert quote-opening)
-            (cl-incf quote-depth)))
-         ((> quote-depth line-depth)
-          (while (> quote-depth line-depth)
-            (insert quote-closing)
-            (cl-decf quote-depth))))
-        (if (and in-quote-p (looking-at "^[ \t]*$"))
-            (progn
-              (insert "</div>\n<div>")
-              (forward-line)
-              (insert "<br /></div>\n<div>"))
-          (forward-line)))
-      (buffer-substring (point-min) (point-max)))))
-
 (defun markdown-mime-multipart (plain html &optional images)
   "Markup PLAIN body a multipart/alternative with HTML alternatives.
 If html portion of message includes IMAGES they are wrapped in
@@ -348,9 +171,7 @@ multipart/related part."
                  plain
                  (when images "<#multipart type=related>")
                  "<#part type=text/html>\n"
-                 (if markdown-mime-beautify-quoted-mail-p
-                     (markdown-mime-beautify-quoted html)
-                   html)
+                 html
                  images
                  (when images "<#/multipart>\n")
                  "<#/multipart>\n"))
@@ -450,19 +271,6 @@ CURRENT-FILE is used to calculate full path of images."
 (defun markdown-mime-insert-html-content (plain file html)
   "Insert PLAIN into FILE with HTML content."
   (let* ((files (markdown-mime-extract-non-image-files))
-         ;; dvipng for inline latex because MathJax doesn't work in mail
-         ;; Also @see https://github.com/markdown-mime/markdown-mime/issues/16
-         ;; (setq org-html-with-latex nil) sometimes useful
-         (org-html-with-latex markdown-mime-org-html-with-latex-default)
-         ;; we don't want to convert org file links to html
-         (org-html-link-org-files-as-html nil)
-         (org-link-file-path-type 'absolute)
-         ;; prettify reply with ">"
-         (org-export-preserve-breaks markdown-mime-preserve-breaks)
-         ;; org 9
-         (org-html-htmlize-output-type 'inline-css)
-         ;; org 8
-         (org-export-htmlize-output-type 'inline-css)
          (html-and-images (markdown-mime-replace-images html file))
          (images (cdr html-and-images))
          (html (markdown-mime-apply-html-hook (car html-and-images))))
@@ -479,8 +287,8 @@ CURRENT-FILE is used to calculate full path of images."
             files))
 
     (insert (markdown-mime-multipart (markdown-mime-apply-plain-text-hook plain)
-                                html
-                                (if images (mapconcat 'identity images "\n"))))
+                                     html
+                                     (if images (mapconcat 'identity images "\n"))))
 
     ;; Attach any residual files
     (when files
@@ -504,7 +312,6 @@ CURRENT-FILE is used to calculate full path of images."
   (save-excursion
     (goto-char (point-max))
     (re-search-backward markdown-mime-mail-signature-separator nil t nil)))
-
 
 (defmacro markdown-mime-extract-tag-in-current-buffer (beginning end result)
   "Extract the text between BEGINNING and END and insert it into RESULT."
@@ -560,18 +367,15 @@ If called with an active region only export that region, otherwise entire body."
          (all-tags (markdown-mime-extract-non-org))
          (secure-tags (plist-get all-tags :secure-tags))
          (part-tags (plist-get all-tags :part-tags))
-         (html-start (funcall markdown-mime-find-html-start
-                              (or (and region-p (region-beginning))
-                                  (markdown-mime-mail-body-begin))))
+         (html-start (or (and region-p (region-beginning))
+                         (markdown-mime-mail-body-begin)))
          (html-end (or (and region-p (region-end))
                        (or
                         (markdown-mime-mail-signature-begin)
                         (point-max))))
-         (org-text (buffer-substring html-start html-end))
-;; to hold attachments for inline html images
-         (opts (markdown-mime-get-buffer-export-options))
-         (plain (markdown-mime-export-ascii-maybe org-text))
-         (html (markdown-mime-export-string org-text opts))
+         (raw-text (buffer-substring html-start html-end))
+         ;; to hold attachments for inline html images
+         (html (markdown-mime-export-string raw-text))
          (file (make-temp-name (expand-file-name
                                 "mail" temporary-file-directory))))
 
@@ -586,7 +390,7 @@ If called with an active region only export that region, otherwise entire body."
       (insert "\n\n"))
 
     ;; insert converted html
-    (markdown-mime-insert-html-content plain file html)
+    (markdown-mime-insert-html-content raw-text file html)
 
     ;; restore part tags (attachments)
     (when part-tags
