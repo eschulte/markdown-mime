@@ -122,9 +122,6 @@ buffer holding the text to be exported.")
 (defvar markdown-mime-send-buffer-hook nil
   "Hook to run in the markdown file before export.")
 
-(defvar markdown-mime-debug nil
-  "Enable debug logger.")
-
 ;; internal variables
 (defvar markdown-mime-src--overlay nil)
 (defvar markdown-mime-src--beg-marker nil)
@@ -162,7 +159,6 @@ buffer holding the text to be exported.")
 
 (defun markdown-mime-file (ext path id)
   "Markup a file with EXT, PATH and ID for attachment."
-  (when markdown-mime-debug (message "markdown-mime-file called => %s %s %s" ext path id))
   (cl-case markdown-mime-library
     (mml (format "<#part type=\"%s\" filename=\"%s\" disposition=inline id=\"<%s>\">\n<#/part>\n"
                  ext path id))
@@ -222,7 +218,6 @@ Or else use CURRENT-FILE to calculate path."
 (defun markdown-mime-replace-images (str current-file)
   "Replace images in STR with cid links.
 CURRENT-FILE is used to calculate full path of images."
-  (when markdown-mime-debug (message "markdown-mime-replace-images called => %s" current-file))
   (let* (html-images)
     (cons
      (replace-regexp-in-string ;; replace images in html
@@ -305,11 +300,7 @@ CURRENT-FILE is used to calculate full path of images."
                                      (if images (mapconcat 'identity images "\n"))))
 
     ;; Attach any residual files
-    (when files
-      (mapc (lambda (f)
-              (when markdown-mime-debug (message "attaching: %s" f))
-              (mml-attach-file f))
-            files))
+    (when files (mapc mml-attach-file files))
 
     ;; spacer
     (insert "\n\n")))
@@ -375,7 +366,6 @@ CURRENT-FILE is used to calculate full path of images."
   "Export a portion of an email to html using `org-mode'.
 If called with an active region only export that region, otherwise entire body."
   (interactive)
-  (when markdown-mime-debug (message "markdown-mime-htmlize called"))
 
   (let* ((region-p (org-region-active-p))
          (all-tags (markdown-mime-extract-non-org))
@@ -697,12 +687,9 @@ Following headline properties can determine the mail headers.
     (cond
      ((and mail-beg txt-beg txt-end (< mail-beg txt-beg txt-end))
       ;; extract text mail
-      (setq mail-text (buffer-substring-no-properties txt-beg
-                                                      (- txt-end (length html-sep))))
+      (setq mail-text (buffer-substring-no-properties txt-beg (- txt-end (length html-sep))))
       ;; delete html mail
       (delete-region mail-beg (point-max))
-      (when markdown-mime-debug
-        (message "mail-beg=%s mail-text=%s" mail-beg mail-text))
       ;; restore text mail
       (insert mail-text))
      (t
