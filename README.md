@@ -49,7 +49,8 @@ PGP Fingerprint: FA8D C2C3 E8A0 A749 34CD  9DCF 3C1B 8581 614C A05D
 ```
 
 sends an html email rendering as follows:
-![](file:screenshot.png)
+
+![](https://raw.githubusercontent.com/eschulte/markdown-mime/master/screenshot.png)
 
 
 ## Setup
