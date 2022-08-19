@@ -1,6 +1,4 @@
-SHELL = /bin/sh
 EMACS ?= emacs
-PROFILER =
 
 .PHONY: test
 
@@ -10,9 +8,9 @@ clean:
 	rm -f \#*\#
 	rm -f *.elc
 
-deps:
-	[ -f test/htmlize.el ] || curl -L https://raw.githubusercontent.com/hniksic/emacs-htmlize/HEAD/htmlize.el > test/htmlize.el
+test/htmlize.el:
+	curl -L https://raw.githubusercontent.com/hniksic/emacs-htmlize/HEAD/htmlize.el > $@
 
 # Run tests.
-test: clean deps
+test: clean test/htmlize.el
 	$(EMACS) -batch -Q -l markdown-mime.el -l test/htmlize.el -l test/markdown-mime-tests.el
