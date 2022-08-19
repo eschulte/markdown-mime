@@ -25,7 +25,7 @@ line breaks these days.  Also, Markdown export including:
 - and inline images.
   ![markdown mark](~/Desktop/Markdown-mark.png)
 
-Just call `markdown-mime-htmlize `which you can bind to a key with
+Just call `markdown-mime-htmlize` which you can bind to a key with
 
     (add-hook 'message-mode-hook
                 (lambda ()
