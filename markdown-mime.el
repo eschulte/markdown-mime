@@ -219,9 +219,9 @@ CURRENT-FILE is used to calculate full path of images."
 (defun markdown-mime-extract-non-image-files ()
   "Extract non-image links in current buffer."
   (save-excursion
-    (loop while (markdown-next-link)
-          when (string= "file" (first (split-string (markdown-link-url) ":")))
-          collect (markdown-link-url))))
+    (cl-loop while (markdown-next-link)
+             when (string= "file" (first (split-string (markdown-link-url) ":")))
+             collect (markdown-link-url))))
 
 (defun markdown-mime-apply-plain-text-hook (text)
   "Apply TEXT hook."
