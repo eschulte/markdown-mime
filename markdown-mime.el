@@ -197,22 +197,24 @@ CURRENT-FILE is used to calculate full path of images."
      (replace-regexp-in-string ;; replace images in html
       "src=\"\\([^\"]+\\)\""
       (lambda (text)
-        (format
-         "src=\"cid:%s\""
-         (let* ((url (and (string-match "src=\"\\([^\"]+\\)\"" text)
-                          (match-string 1 text)))
-                (path (markdown-mime-url-to-path url current-file))
-                (ext (file-name-extension path))
-                (id (replace-regexp-in-string "[\/\\\\]" "_" path)))
+        (if (string= ".js\"" (subseq text (- (length text) 4)))
+            text       ; Skip JavaScript links leaving them unchanged.
+          (format
+           "src=\"cid:%s\""
+           (let* ((url (and (string-match "src=\"\\([^\"]+\\)\"" text)
+                            (match-string 1 text)))
+                  (path (markdown-mime-url-to-path url current-file))
+                  (ext (file-name-extension path))
+                  (id (replace-regexp-in-string "[\/\\\\]" "_" path)))
 
-           ;; Catch non-existent files here. Otherwise users get an error on sending.
-           (unless (file-exists-p path)
-             (user-error "Path: %s does not exist" path))
+             ;; Catch non-existent files here. Otherwise users get an error on sending.
+             (unless (file-exists-p path)
+               (user-error "Path: %s does not exist" path))
 
-           ;; Do it
-           (add-to-list 'html-images
-                        (markdown-mime-file (concat "image/" ext) path id))
-           id)))
+             ;; Do it
+             (add-to-list 'html-images
+                          (markdown-mime-file (concat "image/" ext) path id))
+             id))))
       str)
      html-images)))
 
