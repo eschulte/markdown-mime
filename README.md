@@ -9,50 +9,50 @@ images in email.
 
 For example the following message buffer:
 
-```
-To: Eric Schulte <my.self@gmail.com>
-Subject: Markdown-mime example email
-From: Eric Schulte <my.self@gmail.com>
---text follows this line--
-<#secure method=pgpmime mode=sign>
-Paragraphs wrapping nicely because nobody expects you to pick your own
-line breaks these days.  Also, Markdown export including:
 
-- Fancy *italics* and **bold**,
+    To: Eric Schulte <my.self@gmail.com>
+    Subject: Markdown-mime example email
+    From: Eric Schulte <my.self@gmail.com>
+    --text follows this line--
+    <#secure method=pgpmime mode=sign>
+    Paragraphs wrapping nicely because nobody expects you to pick your own
+    line breaks these days.  Also, Markdown export including:
 
-- lists,
+    - Fancy *italics* and **bold**,
 
-- tables,
+    - lists,
 
-    | Heading One   | Heading Two  |
-    |---------------|--------------|
-    | Content One   | Content Two  |
-    | Content Three | Content Four |
+    - tables,
 
-- and inline images.
+        | Heading One   | Heading Two  |
+        |---------------|--------------|
+        | Content One   | Content Two  |
+        | Content Three | Content Four |
 
-    ![markdown mark](~/Desktop/Markdown-mark.png)
+    - and inline images.
 
-Just call `markdown-mime-htmlize` which you can bind to a key with
+        ![markdown mark](~/Desktop/Markdown-mark.png)
 
-```lisp
-(add-hook 'message-mode-hook
-            (lambda ()
-              (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
-```
+    Just call `markdown-mime-htmlize` which you can bind to a key with
 
-Or get really fancy and edit emails in markdown-mode using mmm-mode with
+    ```lisp
+    (add-hook 'message-mode-hook
+                (lambda ()
+                  (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
+    ```
 
-```lisp
-(mmm-add-classes ;; mmm-mode class for markdown keybindings and highlighting
-   '((message-minor-markdown
-      :submode markdown-mode
-      :face mmm-declaration-submode-face
-      :front "--text follows this line--"
-      :back "-- ")))
-(mmm-add-mode-ext-class 'message-mode nil 'message-minor-markdown)
-```
-```
+    Or get really fancy and edit emails in markdown-mode using mmm-mode with
+
+    ```lisp
+    (mmm-add-classes ;; mmm-mode class for markdown keybindings and highlighting
+       '((message-minor-markdown
+          :submode markdown-mode
+          :face mmm-declaration-submode-face
+          :front "--text follows this line--"
+          :back "-- ")))
+    (mmm-add-mode-ext-class 'message-mode nil 'message-minor-markdown)
+    ```
+
 
 sends an html email rendering as follows:
 
