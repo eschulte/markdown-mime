@@ -5,7 +5,8 @@
 # output to STDOUT.  Set `markdown-command' to the path to this
 # script.
 #
-pandoc --embed-resources --standalone \
+pandoc -f markdown+autolink_bare_uris \
+       --embed-resources --standalone \
        --css $(dirname $0)/pandoc-email.css \
        -V title:"" --metadata title="email" \
        2>/dev/null \
