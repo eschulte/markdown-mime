@@ -66,7 +66,7 @@ For example the following message buffer:
 
 sends an html email rendering as follows:
 
-![](https://raw.githubusercontent.com/eschulte/markdown-mime/master/screenshot.png)
+![](https://raw.githubusercontent.com/eschulte/markdown-mime/main/screenshot.png)
 
 
 ## Setup
