@@ -49,9 +49,18 @@
 ;;             (lambda ()
 ;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
 ;;
-;; You may want to enable markdown in the messsage body of your email.
-;; You can do this with mmm-mode by adding the following to your
-;; config.
+;; You (recommended) may want to enable list and table editing in your
+;; message buffers.
+;;
+;;     (add-hook 'message-mode-hook
+;;                 (lambda ()
+;;                   (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
+;;                   (when (fboundp 'orgalist-mode) (orgalist-mode 1))
+;;                   (when (fboundp 'orgtbl-mode) (orgtbl-mode 1))))
+;;
+;; Or (not recommended) you may want to enable markdown in the
+;; messsage body of your email.  You can do this with mmm-mode by
+;; adding the following to your config.
 ;;
 ;;     (mmm-add-classes
 ;;      '((message-minor-markdown

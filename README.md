@@ -41,7 +41,17 @@ For example the following message buffer:
                   (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
     ```
 
-    Or get really fancy and edit emails in markdown-mode using mmm-mode with
+    Or (*recommended*) enable list and table editing in your message buffers
+    
+    ```lisp
+    (add-hook 'message-mode-hook
+                (lambda ()
+                  (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
+                  (when (fboundp 'orgalist-mode) (orgalist-mode 1))
+                  (when (fboundp 'orgtbl-mode) (orgtbl-mode 1))))
+    ```
+
+    Or (*not recommended*) get really really fancy and edit emails in markdown-mode using mmm-mode with
 
     ```lisp
     (mmm-add-classes ;; mmm-mode class for markdown keybindings and highlighting
