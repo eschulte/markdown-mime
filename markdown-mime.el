@@ -69,7 +69,7 @@
 ;;         :front "--text follows this line--"
 ;;         :front-offset 1 ; Skip the following newline.
 ;;         ;; :front-offset 36 ; Skip "<#secure method=pgpmime mode=sign>" and 2 newlines.
-;;         :back "-- ")))
+;;         :back "^-- ")))
 ;;     (mmm-add-mode-ext-class 'message-mode nil 'message-minor-markdown)
 ;;
 ;; Extra Tips:

@@ -60,7 +60,7 @@ For example the following message buffer:
           :submode markdown-mode
           :face mmm-declaration-submode-face
           :front "--text follows this line--"
-          :back "-- ")))
+          :back "^-- ")))
     (mmm-add-mode-ext-class 'message-mode nil 'message-minor-markdown)
     ```
 
