@@ -376,6 +376,22 @@ If called with an active region only export that region, otherwise entire body."
       (insert (mapconcat #'identity (plist-get all-tags :part-tags) "\n"))
       (insert "\n\n"))))
 
+;;;###autoload
+(defun markdown-mime-preview ()
+  "Open the text/html mime alternative of the email in the current bufffer.
+NOTE: This preview will NOT resolve attached images in the HTML
+preview although they will render when shown in the recipients
+mail reader."
+  (interactive)
+  (let ((html-part (save-excursion
+                     (goto-char (point-min))
+                     (buffer-substring
+                      (progn (search-forward "<#part type=text/html>") (match-end 0))
+                      (progn (search-forward "<#/multipart>") (match-beginning 0))))))
+    (with-temp-buffer
+      (insert html-part)
+      (browse-url-of-buffer))))
+
 (provide 'markdown-mime)
 ;; Local Variables:
 ;; coding: utf-8

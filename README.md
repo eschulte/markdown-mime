@@ -47,6 +47,7 @@ For example the following message buffer:
     (add-hook 'message-mode-hook
                 (lambda ()
                   (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
+                  (local-set-key (kbd "C-c M-p") 'markdown-mime-preview)
                   (when (fboundp 'orgalist-mode) (orgalist-mode 1))
                   (when (fboundp 'orgtbl-mode) (orgtbl-mode 1))))
     ```
