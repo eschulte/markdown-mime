@@ -39,15 +39,26 @@
 ;; Quick start:
 ;; Write a message in message-mode, make sure the mail body follows
 ;; markdown format.  Run `markdown-mime-htmlize' to convert the plain
-;; text mail to html mail.  You can always undo to get back to the plain text.
+;; text mail to html mail.  (You can always just `undo' to get back to
+;; the plain text.)  Run `markdown-mime-preview' to double-check the
+;; text/html part before sending.
 ;;
 ;; Setup (OPTIONAL):
-;; You might want to bind this to a key with something like the
+;; You might want to bind these to keys with something like the
 ;; following message-mode binding
 ;;
 ;;   (add-hook 'message-mode-hook
 ;;             (lambda ()
-;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
+;;               (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
+;;               (local-set-key (kbd "C-c M-p") 'markdown-mime-preview)
+;;               ;; This next obscure little bit stops
+;;               ;; `electric-indent-mode' from running
+;;               ;; `newline-and-indent' which will strip trailing
+;;               ;; whitespace at the end of a line when RET is
+;;               ;; pressed.  Trailing whitespace is needed in
+;;               ;; markdown syntax to signal a </br>, e.g. after a
+;;               ;; closing like "Thanks, ".
+;;               (setq electric-indent-inhibit 'electric-layout-mode)))
 ;;
 ;; You (recommended) may want to enable list and table editing in your
 ;; message buffers.

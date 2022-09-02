@@ -37,22 +37,31 @@ For example the following message buffer:
 
     ```lisp
     (add-hook 'message-mode-hook
-                (lambda ()
-                  (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)))
+              (lambda ()
+                (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
+                (local-set-key (kbd "C-c M-p") 'markdown-mime-preview)
+                ;; This next obscure little bit stops
+                ;; `electric-indent-mode' from running
+                ;; `newline-and-indent' which will strip trailing
+                ;; whitespace at the end of a line when RET is
+                ;; pressed.  Trailing whitespace is needed in markdown
+                ;; syntax to signal a </br>, e.g. after a closing like
+                ;; "Thanks,  ".
+                (setq electric-indent-inhibit 'electric-layout-mode)))
     ```
 
-    Or (*recommended*) enable list and table editing in your message buffers
-    
+    Or (*recommended*) enable list and table editing in your message
+    buffers with the following (in addition to the above)
+
     ```lisp
     (add-hook 'message-mode-hook
                 (lambda ()
-                  (local-set-key (kbd "C-c M-o") 'markdown-mime-htmlize)
-                  (local-set-key (kbd "C-c M-p") 'markdown-mime-preview)
                   (when (fboundp 'orgalist-mode) (orgalist-mode 1))
                   (when (fboundp 'orgtbl-mode) (orgtbl-mode 1))))
     ```
 
-    Or (*not recommended*) get really really fancy and edit emails in markdown-mode using mmm-mode with
+    Or (*not recommended*) get really really fancy and edit emails in
+    markdown-mode using mmm-mode with
 
     ```lisp
     (mmm-add-classes ;; mmm-mode class for markdown keybindings and highlighting
