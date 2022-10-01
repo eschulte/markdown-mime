@@ -250,13 +250,13 @@ CURRENT-FILE is used to calculate full path of images."
   (save-excursion
     (goto-char (point-min))
     (when (re-search-forward "[\n]\\(-+ Start of forwarded message -+\\)" nil t)
-      (replace-match "  \n`\\1`  "))
-    (goto-char (match-end 0))
-    (let ((header-end (save-excursion (re-search-forward "^$") (point-marker))))
-      (cl-loop while (re-search-forward "[\n]\\([^[:space:]]+\\): \\(.*\\)$" header-end t)
-               do (replace-match "  \n**\\1**: \\2")))
-    (when (re-search-forward "[\n]\\(-+ End of forwarded message -+\\)" nil t)
-      (replace-match "  \n`\\1`  "))))
+      (replace-match "  \n`\\1`  ")
+      (goto-char (match-end 0))
+      (let ((header-end (save-excursion (re-search-forward "^$") (point-marker))))
+        (cl-loop while (re-search-forward "[\n]\\([^[:space:]]+\\): \\(.*\\)$" header-end t)
+                 do (replace-match "  \n**\\1**: \\2")))
+      (when (re-search-forward "[\n]\\(-+ End of forwarded message -+\\)" nil t)
+        (replace-match "  \n`\\1`  ")))))
 
 (defun markdown-mime-apply-plain-text-hook (text)
   "Apply TEXT hook."
